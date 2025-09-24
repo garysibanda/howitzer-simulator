@@ -93,20 +93,23 @@ void Simulator::handleInput(const Interface* pUI)
 
 /*********************************************
  * SIMULATOR : PROCESS MOVEMENT INPUT
- * Handle howitzer movement controls
+ * Handle howitzer movement controls with angle limits (0° to 90°)
  *********************************************/
 void Simulator::processMovementInput(const Interface* pUI)
 {
-   // Rotation controls
-   if (pUI->isRight())
+   // Get current angle in degrees for limit checking
+   double currentAngle = howitzer.getElevation().getDegrees();
+   
+   // Rotation controls with limits (0° to 90° range only)
+   if (pUI->isRight() && currentAngle < MAX_ELEVATION_ANGLE)
       howitzer.rotate(0.05);
-   if (pUI->isLeft())
+   if (pUI->isLeft() && currentAngle > 0.0)  // Changed from MIN_ELEVATION_ANGLE to 0.0
       howitzer.rotate(-0.05);
    
-   // Elevation controls
-   if (pUI->isUp())
+   // Elevation controls (kept for backward compatibility but with limits)
+   if (pUI->isUp() && currentAngle < MAX_ELEVATION_ANGLE)
       howitzer.raise(0.003);
-   if (pUI->isDown())
+   if (pUI->isDown() && currentAngle > 0.0)  // Changed from MIN_ELEVATION_ANGLE to 0.0
       howitzer.raise(-0.003);
 }
 
@@ -227,7 +230,7 @@ void Simulator::draw(ogstream& gout) const
 
 /*********************************************
  * SIMULATOR : DISPLAY GAME STATS
- * Display current game statistics
+ * Display current game statistics with ANGLE instead of ELEVATION
  *********************************************/
 void Simulator::displayGameStats(ogstream& gout) const
 {
@@ -239,9 +242,9 @@ void Simulator::displayGameStats(ogstream& gout) const
    gout << std::setw(85) << std::setfill(' ') << ""
         << "Flight time: " << time << "s\n";
    
-   // Display howitzer angle
+   // Display howitzer angle (CHANGED FROM "Elevation" TO "Angle")
    gout << std::setw(95) << std::setfill(' ') << ""
-        << "Elevation: " << howitzer.getElevation().getDegrees() << "°\n";
+        << "Angle: " << howitzer.getElevation().getDegrees() << "°\n";
    
    // Display score and accuracy
    gout << std::setw(85) << std::setfill(' ') << ""

@@ -19,7 +19,7 @@
 // Default M777 Howitzer specifications
 #define DEFAULT_MUZZLE_VELOCITY   827.00     // m/s
 #define DEFAULT_ELEVATION_ANGLE   45.0       // degrees
-#define MIN_ELEVATION_ANGLE      -5.0        // degrees
+#define MIN_ELEVATION_ANGLE       0.0        // degrees (CHANGED: was -5.0)
 #define MAX_ELEVATION_ANGLE      85.0        // degrees
 
 // Forward declaration for unit tests
@@ -89,22 +89,63 @@ public:
       constrainElevation();
    }
    
-   // Rotation controls
+   // Rotation controls - with pre-checking to prevent skipping
    void rotate(double radians)
    {
-      elevation.add(radians);
-      constrainElevation();
+      // Convert radians to degrees for checking
+      double deltaeDegrees = radians * (180.0 / M_PI);
+      double currentDegrees = elevation.getDegrees();
+      double newDegrees = currentDegrees + deltaeDegrees;
+      
+      // Only allow the rotation if it stays within bounds
+      if (newDegrees >= MIN_ELEVATION_ANGLE && newDegrees <= MAX_ELEVATION_ANGLE)
+      {
+         elevation.add(radians);
+      }
+      // If it would go out of bounds, clamp to the nearest limit
+      else if (newDegrees < MIN_ELEVATION_ANGLE)
+      {
+         elevation.setDegrees(MIN_ELEVATION_ANGLE);
+      }
+      else if (newDegrees > MAX_ELEVATION_ANGLE)
+      {
+         elevation.setDegrees(MAX_ELEVATION_ANGLE);
+      }
    }
    
-   // Elevation controls (raise/lower)
+   // Elevation controls (raise/lower) - with pre-checking
    void raise(double radians)
    {
-      if (elevation.isRight())
-         elevation.add(-radians);  // Moving toward vertical
-      else
-         elevation.add(radians);   // Moving toward vertical
+      // Convert radians to degrees for checking
+      double deltaeDegrees = radians * (180.0 / M_PI);
+      double currentDegrees = elevation.getDegrees();
       
-      constrainElevation();
+      // Apply the logic based on direction
+      double actualDelta;
+      if (elevation.isRight())
+         actualDelta = -deltaeDegrees;  // Moving toward vertical
+      else
+         actualDelta = deltaeDegrees;   // Moving toward vertical
+      
+      double newDegrees = currentDegrees + actualDelta;
+      
+      // Only allow the change if it stays within bounds
+      if (newDegrees >= MIN_ELEVATION_ANGLE && newDegrees <= MAX_ELEVATION_ANGLE)
+      {
+         if (elevation.isRight())
+            elevation.add(-radians);  // Moving toward vertical
+         else
+            elevation.add(radians);   // Moving toward vertical
+      }
+      // If it would go out of bounds, clamp to the nearest limit
+      else if (newDegrees < MIN_ELEVATION_ANGLE)
+      {
+         elevation.setDegrees(MIN_ELEVATION_ANGLE);
+      }
+      else if (newDegrees > MAX_ELEVATION_ANGLE)
+      {
+         elevation.setDegrees(MAX_ELEVATION_ANGLE);
+      }
    }
    
    // Quick elevation presets
@@ -149,10 +190,12 @@ private:
    double lastFireTime;    // Time of last firing
    int roundsFired;        // Total rounds fired
    
-   // Constrain elevation to realistic limits
+   // Constrain elevation to realistic limits (0° to 85°)
    void constrainElevation()
    {
       double degrees = elevation.getDegrees();
+      
+      // Simple clamping within the allowed range
       if (degrees < MIN_ELEVATION_ANGLE)
          elevation.setDegrees(MIN_ELEVATION_ANGLE);
       else if (degrees > MAX_ELEVATION_ANGLE)

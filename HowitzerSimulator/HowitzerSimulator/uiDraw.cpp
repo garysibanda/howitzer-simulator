@@ -68,7 +68,7 @@ struct Quad
 inline void glResetColor()
 {
    glColor3f((GLfloat)0.0 /* red % */, (GLfloat)0.0 /* green % */, (GLfloat)0.0 /* blue % */);
-}   
+}
 
 
 /*************************************************************************
@@ -279,7 +279,7 @@ void ogstream :: drawHowitzer(const Position & pos, double angle, double age)
    // outline for the Muzzle, the Base, and the muzzle flash
    Quad muzzle[] =
    {
-      { {-2.0, 8.0}, {2.0, 8.0}, {2.0, 6.5}, {-2.0, 6.5}, 
+      { {-2.0, 8.0}, {2.0, 8.0}, {2.0, 6.5}, {-2.0, 6.5},
         (GLfloat)0.07, (GLfloat)0.08, (GLfloat)0.03},    // aiming stuff
       { {-0.5, 0.0}, {0.5, 0.0}, {0.5, 18.0}, {-0.8, 18.0},
         (GLfloat)0.14, (GLfloat)0.16, (GLfloat)0.06},    // barrel
@@ -308,23 +308,20 @@ void ogstream :: drawHowitzer(const Position & pos, double angle, double age)
    PT pointsMuzzleFlash[10][2] =
    {
       { {-11,21}, {11,21} },      // least intense
-      { {-11,19}, {11,19} },     
+      { {-11,19}, {11,19} },
       { {-15,20}, {15,20} },
       { { -7,21}, { 7,21} },
-      { { -7,19}, { 7,19} },     
-      { {-10,20}, {10,20} },     
-      { { -2,21}, { 2,21} },     
+      { { -7,19}, { 7,19} },
+      { {-10,20}, {10,20} },
+      { { -2,21}, { 2,21} },
       { { -2,19}, { 2,19} },
       { { -5,20}, { 5,20} },
       { { -2,20}, { 2,20} }      // most intense
    };
 
-   // Draw the base
+   // Draw the base - Since howitzer only rotates from 0° (up) to 85° (right), always use right base
    for (int i = 0; i < sizeof(baseLeft) / sizeof(Quad); i++)
-      if (angle <= 0.0)
-         drawQuad(baseLeft[i],  pos, 0.0);
-      else
-         drawQuad(baseRight[i], pos, 0.0);
+      drawQuad(baseRight[i], pos, 0.0);  // Always use right base for 0°-85° range
 
    // Draw the muzzle
    for (int i = 0; i < sizeof(muzzle) / sizeof(Quad); i++)
@@ -332,7 +329,7 @@ void ogstream :: drawHowitzer(const Position & pos, double angle, double age)
 
    // Now for the muzzle flash
    if (age >= 0.0 && age < 2.0) // flash duration in seconds
-   { 
+   {
       // draw the muzzle flash
       glBegin(GL_LINES);
 
@@ -379,7 +376,7 @@ Position rotatePosition(const Position& origin, double x, double y, double rotat
 
 /******************************************************************
  * RANDOM
- * This function generates a random number.  
+ * This function generates a random number.
  *
  *    INPUT:   min, max : The number of values (min <= num <= max)
  *    OUTPUT   <return> : Return the integer
@@ -395,7 +392,7 @@ int random(int min, int max)
 
 /******************************************************************
  * RANDOM
- * This function generates a random number.  
+ * This function generates a random number.
  *
  *    INPUT:   min, max : The number of values (min <= num <= max)
  *    OUTPUT   <return> : Return the double
